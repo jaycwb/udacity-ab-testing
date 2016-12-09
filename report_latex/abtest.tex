@@ -9,7 +9,7 @@
 
 \section{Introduction}
 
-	In this project I will perform an AB Test for an experiment conducted by Udacity to verify if a change in their enrolling process presented in the website would lead to less frustrated students, that leave the course because they don't have enough time to dedicate.
+	In this project I will perform an AB Test for an experiment conducted by Udacity to verify if a change in their enrolling process presented in the website would lead to less frustrated students, that leave the course because they don't have enough time to dedicate to it.
 	
 	Udacity has two options on the home page: "start free trial" and "access course materials".
 	If students click on "start free trial", they will be asked to enter credit card information, and will be automatically enrolled in a free trial of the paid version of the course for 14 days.
@@ -34,22 +34,30 @@
 	Udacity has provided the required data in here\footnote{\url{https://docs.google.com/spreadsheets/d/1MYNUtC47Pg8hdoCjOXaHqF-thheGpUshrFA21BAJnNc/edit#gid=0}} and here\footnote{\url{https://docs.google.com/spreadsheets/d/1Mu5u9GrybDdska-ljPXyBjTpdZIUev_6i7t4LRDfXM8/edit#gid=154400404}}.
 	
 	Given all of the possible metrics, we need to pick both variant and invariant metrics.
-	Variant metrics will determine if our hypothesis hold, while invariant ones are not expected to significantly change across the experiment and control groups and shall be used to check the integrity of our test.
+	Variant metrics will determine if our hypothesis hold, while invariant ones are not expected to significantly change across the experiment and control groups and shall be used to check the integrity of our test.	
 	
 	This choice is somewhat naive since the number of cookies (correlated to the number of page views), clicks and click-through-probability should remain unchanged regardless of the experiment set we're dealing with.
-	All of the remainder can change, but I will discuss the ones I believe are relevant for our test in the following topics.
-	
+	All of the remainder can change.
+	To detail my rationale, I will discuss a little bit about each one of them in the following topics.
+	Before that, it is important to mention that the unit of diversion is a cookie.
+	If a student enrolls in a nano degree, they are from that point on tracked by their user-id.
+	Also, the same user-id can't enroll in the free trial twice, while students that don't enroll can't be tracked using the 'user-id' in the experiment, even if they visited the course overview page.
+
 	\begin{itemize}
-		\item \textbf{Gross conversion rate}: this metric could determine whether the screener has effect on enrollments,
-		\item \textbf{Net conversion rate}: this metric could be used to measure if the screener proved to change the completion rate in the 14-day span,
-		\item \textbf{Retention rate}: again, could be used to check if the screener had any effects on the 14-day dropout rate.
+		\item \textbf{Number of cookies}: This is the number of unique cookies to view the course overview. This is an invariant metric since this number should not vary as we change the ``start free trial'' page because the users have not seen that page before they decide to visit it.
+		\item \textbf{Number of user-ids}: This is the number of users who enroll in the free trial. This is not a good invariant metric because the number of users who enroll in the free trial is dependent on the experiment. Also, it is not an ideal evaluation metric because the number of visitors may be different between the experiment and control groups, which could skew the results. The thing here is that the number of user-ids is a raw number and it wouldn't be able to adjust to tests where the experiment and control groups have different sizes. In these cases, `ratio' metrics are preferred.		
+		\item \textbf{Number of clicks}: This is the number of unique cookies that click the "start free trial" button (before the screener). This is an invariant metric since, similarly to the number of cookies, this metric doesn't depend on how we layered the "start free trial" page.
+		\item \textbf{Click-through-probability}: This the ratio of the number of unique cookies to click "start free trial" button by the number of unique cookies that viewed the course overview page. This is also an invariant metric because this probability is computed based on data that is gathered before the user sees the screener.
+		\item \textbf{Gross conversion rate}: this metric could determine whether the screener has effect on enrollments. This is an evaluation metric since the number of users that decide to start the free trial are expected to change depending on how "start free trial" page is layered (with the screener or not). This is one of the utmost important metrics to be evaluated in this A/B test.
+		\item \textbf{Net conversion rate}: this metric could be used to measure if the screener proved to change the completion rate in the 14-day span. This is an evaluation metric since this metric depicts how the  ``5 hour per week dedication" suggestion helps to increase the ratio of users who make payment over those who see the usual "start free trial" page.
+		\item \textbf{Retention rate}: This is also an evaluation metric. This rate could be used to check if the screener had any effects on the 14-day dropout rate. In practice, we could assess this metric to understand if our dedication suggestion is helpful at increasing the ratio of users who make payments over those who finish the free trial the conventional way.
 	\end{itemize}
 	
 	If the hypothesis depicted in the introduction is correct, we would expect to see changes in all these three metrics.
 	
 	\begin{itemize}
 		\item We would expect a \textbf{DECREASE} in the \textit{grose conversion rate} since dropping students would be 'filtered' by the screener
-		\item We need the \textit{net conversion rate} to remain \textbf{UNCHANGED} as the number of students to continue past the free trial and complete the course should \textbf{NOT} be affected
+		\item We need the \textit{net conversion rate} \textbf{NOT TO DECREASE} as the number of students to continue past the free trial and complete the course should \textbf{NOT SIGNIFICANTLY DECREASE}, or in the best case scenario: it would \textbf{INCREASE}
 		\item Finally, the \textit{retention rate} should be \textbf{HIGHER} as the students likely to drop would not have enrolled, and those who enrolled would be unlikely to drop
 	\end{itemize}
 	
@@ -65,14 +73,14 @@
 		First, we need to scale the fraction of pageviews in the sample over the pageviews in the baseline, which is:
 		
 		\begin{displaymath}
-			\frac{5000}{40000} = 0.125
+			\frac{5000}{40000} = 0.1250
 		\end{displaymath}
 		
 		So, given the 3,200 clicks and 660 enrollments in the baseline data, we can predict 400 clicks and 82.5 enrollments a day in the sample.
 	
 		The rates of the evaluation metrics, i.e. gross rate ($gc$), retention ($r$) and net conversion ($nc$), which are as follows: \\
 		\begin{tabular}{ccc}
-			$p_{gc} = 0.20625$ & $p_{nc} = 0.10931$ & $p_{r} = 0.53$ \\
+			$p_{gc} = 0.20625$ & $p_{nc} = 0.10931$ & $p_{r} = 0.5300$ \\
 		\end{tabular}
 		
 		~\\
@@ -107,7 +115,7 @@
 		For the selected metrics, the minimum detectable effect ($d_{min}$) has been pre-specific as a business decision:
 		
 		\begin{tabular}{ccc}
-			$d_{min}(gc) = 0.01$ & $d_{min}(nc) = 0.0075$ & $d_{min}(r) = 0.01$ \\
+			$d_{min}(gc) = 0.01$ & $d_{min}(nc) = 0.0075$ & $d_{min}(r) = 0.0100$ \\
 		\end{tabular}
 	
 		We now can use a sample size formula to determine the required number of samples for each metric $n_{min}$. 
@@ -116,7 +124,7 @@
 		Each metric has its own unit (clicks or enrolls), so values need to be rescaled given the ratio seen in the baseline.
 		
 		\begin{itemize}
-			\item Ratio of page views to clicks = 0.08
+			\item Ratio of page views to clicks = 0.0800
 			\item Ratio of page views to enrolls = 0.0165
 		\end{itemize}
 		
@@ -132,7 +140,7 @@
 	
 		Given the required page views, the exposure can be specified by determining the risk of the experiment, and then we can determine the experiment duration.
 		The exposure depends on the risk involved and because the screener is a warning sign about the time required to complete the course, it constitute near-zero risk.
-		Since no students would suffer any physical risk during the experiment, and since no sensitive data is collected, a complete exposure (100\%) is a safe choice.
+		Since no students would suffer any physical or mental risks during the experiment, and since no sensitive data is collected, a complete exposure (100\%) would be a safe choice.
 		
 		Dividing the total number of page views by the page views per day in the baseline (40,000), we obtain a duration of \textbf{119 days} were Udacity would have to divert it's entire traffic.
 		That's almost \textbf{4 months(!)}, so I believe the duration of the experiment should be reduced.
@@ -152,13 +160,15 @@
 		
 		\begin{itemize}
 			\item Cookies\\
-			$\sigma_{cookies} = \sqrt{\frac{0.5(1-0.5)}{345543+344660}} = 0.006$\\
-			$E_{cookies} = Z \times \sigma_{cookies} = 0.01176$\\
-			$CI_{cookies} = p \pm E_{cookies} = [0.48824, 0.51176]$
+			$\sigma_{cookies} = \sqrt{\frac{0.5(1-0.5)}{345543+344660}} = 0.0006018$\\
+			$E_{cookies} = Z \times \sigma_{cookies} = 0.0011796$\\
+			$CI_{cookies} = p \pm E_{cookies} = [0.4988, 0.5012]$\\
+			Observed~$= \frac{345543}{345543+344660} = 0.5006$\\
 			\item Clicks\\
-			$\sigma_{clicks} = \sqrt{\frac{0.5(1-0.5)}{28378+28325}} = 0.002$\\
-			$E_{clicks} = Z \times \sigma_{clicks} = 0.00392$\\
-			$CI_{clicks} = p \pm E_{clicks} = [0.49608, 0.50392]$
+			$\sigma_{clicks} = \sqrt{\frac{0.5(1-0.5)}{28378+28325}} = 0.0021$\\
+			$E_{clicks} = Z \times \sigma_{clicks} = 0.0041$\\
+			$CI_{clicks} = p \pm E_{clicks} = [0.4959, 0.5041]$\\
+			Observed~$= \frac{28378}{28378+28325} = 0.5005$\\			
 		\end{itemize}
 	
 		Fortunately, both cookies and clicks pass the sanity check.
@@ -166,12 +176,13 @@
 		We can follow the same rationale here, but instead, we should compare the observed rates in the control and experiment groups.
 		This test will determine if the two rates come from the same distribution (which is the hypothesis earlier stated, i.e. it is really invariant).
 		 
-		$\frac{28378}{345543} = 0.082$\\
-		$\sigma_{CTR} = \sqrt{\frac{0.0821(1-0.0821)}{345543}} = 0.000467$\\
-		$E_{CTR} = Z \times \sigma_{CTR} = 0.00091532$\\
-		$CI_{CTR} = p \pm E_{CTR} = [0.0811, 0.0830]$\\
+		Control value~$\frac{28378}{345543} = 0.0821258$\\
+		$\sigma_{CTR} = \sqrt{\frac{0.0821(1-0.0821)}{345543}} = 0.000468$\\
+		$E_{CTR} = Z \times \sigma_{CTR} = 0.00092$\\
+		$CI_{CTR} = p \pm E_{CTR} = [0.0812, 0.0830]$\\
+		Experiment value ~$=0.0821824$\\
 		
-		Since $0.082$ is inside $CI_{CTR}$, it also passes the sanity check!
+		Since the experiment value ($0.082$) is inside $CI_{CTR}$, it also passes the sanity check!
 	
 	\subsection{Significance}
 	
@@ -180,7 +191,11 @@
 		For each metric, I will compute the rate in each group and then compute their differences.
 		These new difference variables will be used to construct confidence intervals as I did in the sanity check.
 		No Bonferroni correction is needed here since the final outcome will require that each of the evaluation metrics present significant results.
-		In practice, if a single metric fails, the initial hypothesis will be denied.
+		It is also worth mentioning that Bonferroni correction is too conservative in the ALL metrics case.
+		The correction is able of reducing false positives by reducing $\alpha$ such that the family-wise error rate is the same as the original $\alpha$ for a single metric, but at the same time, by decreasing $\alpha$, we increase the chances of false negatives.
+		If our test triggers false negatives, it would jeopardize the decision in the ALL case, so we should avoid it here.
+		
+		In practice, the rationale of my proposal is simple: if a single metric fails, the initial hypothesis will be denied.
 
 		~\\
 		\textbf{General Assumption: $\alpha=0.05$ and $Z=1.96$}
@@ -234,22 +249,32 @@
 	\subsection{Overview of the Results}
 		The effect size tests showed that gross conversion is both statistically and practically significant, while net conversion is neither.
 		The gross conversion rate dropped approx. 2\%, and thus, the screener was effective at reducing the number of students that enrolled from the initial click.
-		Yet, the net conversion dropped approx. 0.5\%, indicating that the screener had a negative effect on the number of students that completed the trial.
+		Yet, the net conversion dropped approx. 0.5\%. 
+		Although this decrease is not statistically significant, it suggests that the screener had a negative effect on the number of students that completed the trial, and this value should be further evaluated to see if it matters to our business.
 		This is a drawback of the screener: it makes students to evade the free trial since they don't think they have enough time to devote 5 hours/week to the course.
 		Although the decrease of the gross conversion supports our hypothesis, we can't follow this screener technique since the net conversion dropped and invalidates the initial hypothesis.
 	
 	\subsection{Recommendation}
 	
-		Following the previous discussion, the screener was effective at reducing the number of people from clicking to enroll, but it failed w.r.t in maintaining the number of students who continued the course after the trial.
+		Following the previous discussion, the screener was effective at reducing the number of people from clicking to enroll, but it failed at in maintaining the number of students who continued the course after the trial.
 		In practice, we had a decrease in the ratio of students who kept on working on the nano degrees.
-		Therefore, we should \textbf{NOT} proceed with the launch to the Udacity’s website.
+		Even though this decrease was not statistically significant, if we analyze the CI proportion of the net conversion rates, we'll see that most of it is in the negative space.
+		Since we are working with a 95\% confidence level, this could go either way: (i) in the best case, it would be marginally positive, meaning that in practice we had an increase, or (ii) it could have gone all the way down, meaning that we indeed had a decrease.
+		Therefore, my suggestion is to \textbf{NOT} proceed with the launch to the Udacity’s website since it is too risky.
+				
 
 \section{Follow-up Experiment} \label{sec:followUpExperiments}
 
-	My concern with the current proposal is that students are somewhat 'scared' and lead to think they don't have enough time to dedicate compared to what they actually have.
-	In opposition to presenting the screener upfront, maybe Udacity could measure the number of hours dedicated by the student during the free trial, and after a few days (maybe after the first 7 days), the screener could pop up if the student hasn't dedicated enough time to either motivate the student to dedicate more time or drop without being charged.
-	On the other hand, if the student is showing a good progress and is dedicating enough time, he would be just continue the trial, and consequently, the course.
-	Evidently, Udacity doesn't want any students to drop, so tips, advices and job offers for people with the skills retained with this nano degree could be shown, all aiming at inspiring the student to keep on working on the Nano Degree.
-	In this case, the AB test would be similar: we could compare the \textbf{same metrics} for the subset of students that use the current version of the website against the ones that get the screener after a few days using the free trial.
+	My concern with the current proposal is that students are somewhat 'scared' and they might have been lead to think they don't have enough time to dedicate to the nano degree compared to what they actually have.
+	In opposition to presenting the screener upfront, maybe Udacity could measure the number of hours dedicated by the student during the free trial, and after a few days (maybe after the first 7 days), the screener could pop up if the student hasn't dedicated enough time to alert that he/she are falling behind and that the commitment should be increased.
+	
+	The hypothesis for this experiment is that a warm-hearted reminder in the beginning of the process would help the students to check their own progress.
+	This screener late in the process would either (i) motivate students to dedicate more time, or (ii) drop out earlier in the process.
+	(Just a quick note to make things clear: if a student is on the right pace or ahead of schedule, no screener would pop up!)
+	
+	Since this test would take place \textbf{after} that enrollment, we would need to use the user-id as the unit of diversion, with the same metric being used as the invariant metric.
+	Finally, we could compute ratio between the number of payments and the number of user-ids as a possible evaluation metric.
+	The reason for that is that the number of enrollment students should not change across experimental and control groups (explains why it could be used as an invariant metric), while the ratio between payments and user-ids should change over experimental and control groups, and thus, could be used as an evaluation metric.
+	
 
 \end{document}
